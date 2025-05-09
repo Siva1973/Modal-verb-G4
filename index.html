@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Modal Verbs Quiz - Set 4</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #eef;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    #quiz-container {
+      background: white;
+      padding: 20px;
+      margin: auto;
+      max-width: 600px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .question-number {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .question {
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .option-btn {
+      background: #f2f2f2;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 10px;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.3s;
+    }
+    .option-btn:hover {
+      background: #e0e0e0;
+    }
+    .option-btn.correct::after {
+      content: '✔️';
+      color: green;
+      position: absolute;
+      right: 10px;
+    }
+    .option-btn.wrong::after {
+      content: '❌';
+      color: red;
+      position: absolute;
+      right: 10px;
+    }
+    #next-btn, #toggle-music {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #explanation {
+      font-style: italic;
+      margin-top: 15px;
+    }
+    #result-gif {
+      margin-top: 15px;
+      display: none;
+      width: 200px;
+    }
+    #score {
+      font-size: 18px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="quiz-container">
+    <div class="question-number" id="question-counter">Question 1 of 10</div>
+    <div class="question" id="question">Loading...</div>
+    <div class="options" id="options"></div>
+    <div id="explanation"></div>
+    <img id="result-gif" src="" alt="Result GIF" />
+    <div id="score"></div>
+    <button id="next-btn" style="display:none;">Next Question</button>
+    <br/><br/>
+    <button id="toggle-music">Play Music</button>
+    <audio id="bg-music" loop>
+      <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "She ___ be at the office. Her car is not here.",
+        options: ["must", "can't", "might", "would"],
+        answer: 1,
+        explanation: "'Can't' expresses logical impossibility."
+      },
+      {
+        question: "You ___ always knock before entering.",
+        options: ["must", "should", "can", "may"],
+        answer: 0,
+        explanation: "'Must' expresses a strong rule or obligation."
+      },
+      {
+        question: "___ I borrow your book for the weekend?",
+        options: ["Shall", "Would", "Can", "Might"],
+        answer: 2,
+        explanation: "'Can' is commonly used to ask for permission informally."
+      },
+      {
+        question: "They ___ be home by now. The lights are off.",
+        options: ["could", "must", "can't", "might"],
+        answer: 2,
+        explanation: "'Can't' indicates it is unlikely or impossible."
+      },
+      {
+        question: "You ___ leave your bag unattended.",
+        options: ["shouldn't", "could", "must", "would"],
+        answer: 0,
+        explanation: "'Shouldn't' is advice against doing something."
+      },
+      {
+        question: "I ___ help you tomorrow if you need.",
+        options: ["must", "can", "might", "will"],
+        answer: 1,
+        explanation: "'Can' expresses willingness or ability in the future."
+      },
+      {
+        question: "You ___ take an umbrella. It's going to rain.",
+        options: ["could", "would", "should", "may"],
+        answer: 2,
+        explanation: "'Should' is used to give advice."
+      },
+      {
+        question: "He ___ have taken your book by mistake.",
+        options: ["must", "can", "might", "shall"],
+        answer: 2,
+        explanation: "'Might' expresses possibility or uncertainty."
+      },
+      {
+        question: "We ___ meet again next week.",
+        options: ["might", "can", "must", "would"],
+        answer: 0,
+        explanation: "'Might' indicates a possible future event."
+      },
+      {
+        question: "Students ___ bring their ID cards during exams.",
+        options: ["should", "can", "might", "would"],
+        answer: 0,
+        explanation: "'Should' expresses expected or recommended action."
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+
+    const questionCounter = document.getElementById("question-counter");
+    const questionText = document.getElementById("question");
+    const optionsEl = document.getElementById("options");
+    const explanationEl = document.getElementById("explanation");
+    const resultGif = document.getElementById("result-gif");
+    const scoreEl = document.getElementById("score");
+    const nextBtn = document.getElementById("next-btn");
+    const music = document.getElementById("bg-music");
+    const toggleBtn = document.getElementById("toggle-music");
+
+    const correctGifUrl = "https://media.giphy.com/media/111ebonMs90YLu/giphy.gif";
+    const wrongGifUrl = "https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif";
+
+    function loadQuestion() {
+      const q = questions[currentQuestion];
+      questionCounter.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+      questionText.textContent = q.question;
+      optionsEl.innerHTML = '';
+      explanationEl.textContent = '';
+      resultGif.style.display = 'none';
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.textContent = opt;
+        btn.onclick = () => checkAnswer(btn, idx, q.answer, q.explanation);
+        optionsEl.appendChild(btn);
+      });
+      nextBtn.style.display = 'none';
+    }
+
+    function checkAnswer(btn, selected, correct, explanation) {
+      const allBtns = document.querySelectorAll(".option-btn");
+      allBtns.forEach(b => b.disabled = true);
+      if (selected === correct) {
+        btn.classList.add("correct");
+        score++;
+        resultGif.src = correctGifUrl;
+      } else {
+        btn.classList.add("wrong");
+        allBtns[correct].classList.add("correct");
+        resultGif.src = wrongGifUrl;
+      }
+      explanationEl.textContent = "Explanation: " + explanation;
+      resultGif.style.display = "block";
+      scoreEl.textContent = `Score: ${score} / ${questions.length}`;
+      nextBtn.style.display = 'inline-block';
+    }
+
+    nextBtn.onclick = () => {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        loadQuestion();
+      } else {
+        questionText.textContent = "🎉 Quiz Completed!";
+        optionsEl.innerHTML = "";
+        explanationEl.textContent = "";
+        questionCounter.textContent = "";
+        resultGif.style.display = "none";
+        nextBtn.style.display = "none";
+        scoreEl.textContent = `Final Score: ${score} / ${questions.length}`;
+      }
+    };
+
+    toggleBtn.onclick = () => {
+      if (music.paused) {
+        music.play();
+        toggleBtn.textContent = "Pause Music";
+      } else {
+        music.pause();
+        toggleBtn.textContent = "Play Music";
+      }
+    };
+
+    window.onload = loadQuestion;
+  </script>
+</body>
+</html>
